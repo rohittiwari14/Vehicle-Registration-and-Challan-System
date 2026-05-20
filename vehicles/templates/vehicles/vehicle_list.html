@@ -1,0 +1,97 @@
+{% extends "vehicles/base.html" %}
+
+{% block title %}Vehicles — VahanChallan{% endblock %}
+{% block page_title %}Registered Vehicles{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'vehicle_create' %}" class="btn btn-primary btn-sm">➕ Register New Vehicle</a>
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+  <div class="card-header">
+    <h2>All Vehicles ({{ vehicles.count }})</h2>
+    <form method="GET" class="search-bar">
+      <input
+        type="text"
+        name="q"
+        class="form-input"
+        placeholder="Search by reg. no., owner, brand…"
+        value="{{ search_query }}"
+      >
+      <button type="submit" class="btn btn-outline">🔍 Search</button>
+      {% if search_query %}
+        <a href="{% url 'vehicle_list' %}" class="btn btn-outline">✕ Clear</a>
+      {% endif %}
+    </form>
+  </div>
+
+  {% if vehicles %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Registration No.</th>
+          <th>Owner Name</th>
+          <th>Type</th>
+          <th>Brand / Model</th>
+          <th>Year</th>
+          <th>Fuel</th>
+          <th>Challans</th>
+          <th>Registered On</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for vehicle in vehicles %}
+        <tr>
+          <td style="color:#6b7280;">{{ forloop.counter }}</td>
+          <td>
+            <a href="{% url 'vehicle_detail' vehicle.pk %}">
+              <strong>{{ vehicle.registration_number }}</strong>
+            </a>
+          </td>
+          <td>{{ vehicle.owner_name }}</td>
+          <td><span class="badge badge-moto">{{ vehicle.get_vehicle_type_display }}</span></td>
+          <td>{{ vehicle.brand }} {{ vehicle.model_name }}</td>
+          <td>{{ vehicle.year_of_manufacture }}</td>
+          <td>{{ vehicle.get_fuel_type_display }}</td>
+          <td>
+            {% if vehicle.challan_count > 0 %}
+              <span class="badge badge-pending">{{ vehicle.challan_count }}</span>
+            {% else %}
+              <span style="color:#6b7280;">—</span>
+            {% endif %}
+          </td>
+          <td style="font-size:.8rem;color:#6b7280;">{{ vehicle.registered_at|date:"d M Y" }}</td>
+          <td>
+            <div class="actions-col">
+              <a href="{% url 'vehicle_detail' vehicle.pk %}" class="btn btn-outline btn-sm btn-icon" title="View">👁️</a>
+              <a href="{% url 'vehicle_edit' vehicle.pk %}" class="btn btn-outline btn-sm btn-icon" title="Edit">✏️</a>
+              <a href="{% url 'challan_create' %}?vehicle={{ vehicle.pk }}" class="btn btn-outline btn-sm btn-icon" title="Issue Challan">📋</a>
+              <a href="{% url 'vehicle_delete' vehicle.pk %}" class="btn btn-sm btn-icon" style="background:#fee2e2;color:#dc2626;" title="Delete">🗑️</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="icon">🏍️</div>
+    <p>
+      {% if search_query %}
+        No vehicles found matching "<strong>{{ search_query }}</strong>".
+      {% else %}
+        No vehicles registered yet.
+      {% endif %}
+    </p>
+    <a href="{% url 'vehicle_create' %}" class="btn btn-primary" style="margin-top:1rem;">➕ Register First Vehicle</a>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

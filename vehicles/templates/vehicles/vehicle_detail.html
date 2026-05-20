@@ -1,0 +1,114 @@
+{% extends "vehicles/base.html" %}
+
+{% block title %}{{ vehicle.registration_number }} — VahanChallan{% endblock %}
+{% block page_title %}Vehicle Detail{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'vehicle_edit' vehicle.pk %}" class="btn btn-outline btn-sm">✏️ Edit</a>
+  <a href="{% url 'challan_create' %}?vehicle={{ vehicle.pk }}" class="btn btn-primary btn-sm">📋 Issue Challan</a>
+{% endblock %}
+
+{% block content %}
+
+<div style="display:grid;grid-template-columns:1fr 2fr;gap:1rem;align-items:start;">
+
+  <!-- Vehicle Info Card -->
+  <div class="card">
+    <div class="card-header"><h2>🏍️ Vehicle Info</h2></div>
+    <div class="card-body">
+      <table style="font-size:.875rem;width:100%;">
+        <tr><td style="color:#6b7280;padding:.4rem 0;width:45%;">Reg. No.</td><td><strong>{{ vehicle.registration_number }}</strong></td></tr>
+        <tr><td style="color:#6b7280;padding:.4rem 0;">Owner</td><td>{{ vehicle.owner_name }}</td></tr>
+        <tr><td style="color:#6b7280;padding:.4rem 0;">Type</td><td><span class="badge badge-moto">{{ vehicle.get_vehicle_type_display }}</span></td></tr>
+        <tr><td style="color:#6b7280;padding:.4rem 0;">Brand</td><td>{{ vehicle.brand }}</td></tr>
+        <tr><td style="color:#6b7280;padding:.4rem 0;">Model</td><td>{{ vehicle.model_name }}</td></tr>
+        <tr><td style="color:#6b7280;padding:.4rem 0;">Year</td><td>{{ vehicle.year_of_manufacture }}</td></tr>
+        <tr><td style="color:#6b7280;padding:.4rem 0;">Fuel</td><td>{{ vehicle.get_fuel_type_display }}</td></tr>
+        <tr><td style="color:#6b7280;padding:.4rem 0;">Engine No.</td><td style="font-family:monospace;font-size:.8rem;">{{ vehicle.engine_number }}</td></tr>
+        <tr><td style="color:#6b7280;padding:.4rem 0;">Chassis No.</td><td style="font-family:monospace;font-size:.8rem;">{{ vehicle.chassis_number }}</td></tr>
+        <tr><td style="color:#6b7280;padding:.4rem 0;">Registered</td><td>{{ vehicle.registered_at|date:"d M Y, H:i" }}</td></tr>
+        <tr><td style="color:#6b7280;padding:.4rem 0;">Registered By</td><td>{{ vehicle.registered_by.username|default:"—" }}</td></tr>
+      </table>
+
+      {% if vehicle.pending_challans_count > 0 %}
+      <div class="alert alert-warning" style="margin-top:1rem;font-size:.8rem;">
+        ⚠️ <strong>{{ vehicle.pending_challans_count }} pending challan(s)</strong> — Total outstanding: ₹{{ vehicle.total_challan_amount }}
+      </div>
+      {% else %}
+      <div class="alert alert-success" style="margin-top:1rem;font-size:.8rem;">
+        ✅ No pending challans
+      </div>
+      {% endif %}
+
+      <div style="display:flex;gap:.5rem;margin-top:1rem;">
+        <a href="{% url 'vehicle_edit' vehicle.pk %}" class="btn btn-outline btn-sm">✏️ Edit</a>
+        <a href="{% url 'vehicle_delete' vehicle.pk %}" class="btn btn-sm" style="background:#fee2e2;color:#dc2626;">🗑️ Delete</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Challans -->
+  <div class="card">
+    <div class="card-header">
+      <h2>📋 Challans for this Vehicle ({{ challans.count }})</h2>
+      <a href="{% url 'challan_create' %}?vehicle={{ vehicle.pk }}" class="btn btn-primary btn-sm">➕ Issue New</a>
+    </div>
+
+    {% if challans %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Challan No.</th>
+            <th>Violation</th>
+            <th>Date</th>
+            <th>Location</th>
+            <th>Fine (₹)</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in challans %}
+          <tr>
+            <td><strong>{{ c.challan_number }}</strong></td>
+            <td>{{ c.get_violation_type_display }}</td>
+            <td>{{ c.violation_date|date:"d M Y" }}</td>
+            <td>{{ c.violation_location }}</td>
+            <td><strong>₹{{ c.fine_amount }}</strong></td>
+            <td>
+              {% if c.is_paid %}
+                <span class="badge badge-paid">Paid</span>
+              {% else %}
+                <span class="badge badge-pending">Pending</span>
+              {% endif %}
+            </td>
+            <td>
+              <div class="actions-col">
+                <a href="{% url 'challan_edit' c.pk %}" class="btn btn-outline btn-sm btn-icon" title="Edit">✏️</a>
+                {% if not c.is_paid %}
+                  <a href="{% url 'mark_challan_paid' c.pk %}" class="btn btn-sm btn-icon" style="background:#dcfce7;color:#16a34a;" title="Mark Paid">✅</a>
+                {% endif %}
+                <a href="{% url 'challan_delete' c.pk %}" class="btn btn-sm btn-icon" style="background:#fee2e2;color:#dc2626;" title="Delete">🗑️</a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="icon">📋</div>
+      <p>No challans issued for this vehicle.</p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<div style="margin-top:1rem;">
+  <a href="{% url 'vehicle_list' %}" class="btn btn-outline btn-sm">← Back to Vehicles</a>
+</div>
+
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends "vehicles/base.html" %}
+
+{% block title %}Delete Vehicle — VahanChallan{% endblock %}
+{% block page_title %}Delete Vehicle{% endblock %}
+
+{% block content %}
+
+<div class="card confirm-card">
+  <div class="card-header">
+    <h2>⚠️ Confirm Deletion</h2>
+  </div>
+  <div class="card-body">
+
+    <p>You are about to permanently delete the following vehicle:</p>
+
+    <div class="danger-zone" style="margin:1rem 0;">
+      <strong>{{ vehicle.registration_number }}</strong> — {{ vehicle.owner_name }}<br>
+      {{ vehicle.brand }} {{ vehicle.model_name }} ({{ vehicle.year_of_manufacture }})<br>
+      <br>
+      ⚠️ This will also delete <strong>all {{ vehicle.challans.count }} challan(s)</strong> linked to this vehicle. This action cannot be undone.
+    </div>
+
+    <form method="POST" style="display:flex;gap:.75rem;">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">🗑️ Yes, Delete Permanently</button>
+      <a href="{% url 'vehicle_list' %}" class="btn btn-outline">Cancel</a>
+    </form>
+
+  </div>
+</div>
+
+{% endblock %}

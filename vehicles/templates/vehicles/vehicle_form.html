@@ -1,0 +1,121 @@
+{% extends "vehicles/base.html" %}
+
+{% block title %}{{ form_title }} — VahanChallan{% endblock %}
+{% block page_title %}{{ form_title }}{% endblock %}
+
+{% block content %}
+
+<div class="card" style="max-width:780px;">
+  <div class="card-header">
+    <h2>{{ form_title }}</h2>
+  </div>
+  <div class="card-body">
+
+    <form method="POST" novalidate>
+      {% csrf_token %}
+
+      <div class="form-grid">
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.registration_number.id_for_label }}">
+            Registration Number <span style="color:#dc2626;">*</span>
+          </label>
+          {{ form.registration_number }}
+          {% if form.registration_number.errors %}
+            <span class="form-error">{{ form.registration_number.errors.0 }}</span>
+          {% endif %}
+          <span class="form-help">Format: MH12AB1234</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.owner_name.id_for_label }}">
+            Owner Name <span style="color:#dc2626;">*</span>
+          </label>
+          {{ form.owner_name }}
+          {% if form.owner_name.errors %}
+            <span class="form-error">{{ form.owner_name.errors.0 }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.vehicle_type.id_for_label }}">
+            Vehicle Type <span style="color:#dc2626;">*</span>
+          </label>
+          {{ form.vehicle_type }}
+          {% if form.vehicle_type.errors %}
+            <span class="form-error">{{ form.vehicle_type.errors.0 }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.fuel_type.id_for_label }}">
+            Fuel Type <span style="color:#dc2626;">*</span>
+          </label>
+          {{ form.fuel_type }}
+          {% if form.fuel_type.errors %}
+            <span class="form-error">{{ form.fuel_type.errors.0 }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.brand.id_for_label }}">
+            Brand <span style="color:#dc2626;">*</span>
+          </label>
+          {{ form.brand }}
+          {% if form.brand.errors %}
+            <span class="form-error">{{ form.brand.errors.0 }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.model_name.id_for_label }}">
+            Model Name <span style="color:#dc2626;">*</span>
+          </label>
+          {{ form.model_name }}
+          {% if form.model_name.errors %}
+            <span class="form-error">{{ form.model_name.errors.0 }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.year_of_manufacture.id_for_label }}">
+            Year of Manufacture <span style="color:#dc2626;">*</span>
+          </label>
+          {{ form.year_of_manufacture }}
+          {% if form.year_of_manufacture.errors %}
+            <span class="form-error">{{ form.year_of_manufacture.errors.0 }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.engine_number.id_for_label }}">
+            Engine Number <span style="color:#dc2626;">*</span>
+          </label>
+          {{ form.engine_number }}
+          {% if form.engine_number.errors %}
+            <span class="form-error">{{ form.engine_number.errors.0 }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group full">
+          <label class="form-label" for="{{ form.chassis_number.id_for_label }}">
+            Chassis Number <span style="color:#dc2626;">*</span>
+          </label>
+          {{ form.chassis_number }}
+          {% if form.chassis_number.errors %}
+            <span class="form-error">{{ form.chassis_number.errors.0 }}</span>
+          {% endif %}
+        </div>
+
+      </div>
+
+      <div style="display:flex;gap:.75rem;margin-top:1.5rem;padding-top:1rem;border-top:1px solid #e5e7eb;">
+        <button type="submit" class="btn btn-primary">💾 {{ submit_label }}</button>
+        <a href="{% url 'vehicle_list' %}" class="btn btn-outline">Cancel</a>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,81 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Vehicle Challan System{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ── Sidebar ── -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <h1>🏍️ VahanChallan</h1>
+      <small>Two-Wheeler Management</small>
+    </div>
+
+    <nav class="sidebar-nav">
+      <div class="nav-section">Main</div>
+      <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+        <span class="icon">📊</span> Dashboard
+      </a>
+
+      <div class="nav-section">Vehicles</div>
+      <a href="{% url 'vehicle_list' %}" class="nav-link {% if 'vehicle' in request.resolver_match.url_name %}active{% endif %}">
+        <span class="icon">🏍️</span> All Vehicles
+      </a>
+      <a href="{% url 'vehicle_create' %}" class="nav-link">
+        <span class="icon">➕</span> Register Vehicle
+      </a>
+
+      <div class="nav-section">Challans</div>
+      <a href="{% url 'challan_list' %}" class="nav-link {% if 'challan' in request.resolver_match.url_name %}active{% endif %}">
+        <span class="icon">📋</span> All Challans
+      </a>
+      <a href="{% url 'challan_create' %}" class="nav-link">
+        <span class="icon">➕</span> Issue Challan
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        Logged in as<br>
+        <strong>{{ request.user.get_full_name|default:request.user.username }}</strong>
+      </div>
+      <a href="{% url 'logout' %}" class="btn btn-outline btn-sm" style="width:100%;justify-content:center;color:#fff;border-color:rgba(255,255,255,.3);">
+        🚪 Logout
+      </a>
+    </div>
+  </aside>
+
+  <!-- ── Main content ── -->
+  <div class="main">
+    <header class="topbar">
+      <span class="topbar-title">{% block page_title %}{% endblock %}</span>
+      <div class="topbar-actions">{% block topbar_actions %}{% endblock %}</div>
+    </header>
+
+    <div class="page-content">
+      <!-- Flash messages -->
+      {% if messages %}
+        {% for message in messages %}
+          <div class="alert alert-{{ message.tags|default:'info' }}">
+            {% if message.tags == 'success' %}✅{% elif message.tags == 'error' %}❌{% elif message.tags == 'warning' %}⚠️{% else %}ℹ️{% endif %}
+            {{ message }}
+          </div>
+        {% endfor %}
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

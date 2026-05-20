@@ -1,0 +1,122 @@
+{% extends "vehicles/base.html" %}
+
+{% block title %}Dashboard — VahanChallan{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'vehicle_create' %}" class="btn btn-primary btn-sm">➕ Register Vehicle</a>
+  <a href="{% url 'challan_create' %}" class="btn btn-outline btn-sm">📋 Issue Challan</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Stat Cards -->
+<div class="stats-grid">
+  <div class="stat-card">
+    <span class="stat-label">Total Vehicles</span>
+    <span class="stat-value">{{ total_vehicles }}</span>
+    <span class="stat-sub">Registered two-wheelers</span>
+  </div>
+  <div class="stat-card warning">
+    <span class="stat-label">Total Challans</span>
+    <span class="stat-value">{{ total_challans }}</span>
+    <span class="stat-sub">All time issued</span>
+  </div>
+  <div class="stat-card danger">
+    <span class="stat-label">Pending Challans</span>
+    <span class="stat-value">{{ pending_challans }}</span>
+    <span class="stat-sub">Awaiting payment</span>
+  </div>
+  <div class="stat-card success">
+    <span class="stat-label">Fine Collected</span>
+    <span class="stat-value" style="font-size:1.5rem;">₹{{ total_fine_collected|floatformat:0 }}</span>
+    <span class="stat-sub">From paid challans</span>
+  </div>
+</div>
+
+<!-- Recent tables side by side -->
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+
+  <!-- Recent Vehicles -->
+  <div class="card">
+    <div class="card-header">
+      <h2>🏍️ Recent Registrations</h2>
+      <a href="{% url 'vehicle_list' %}" class="btn btn-outline btn-sm">View all</a>
+    </div>
+    {% if recent_vehicles %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Reg. No.</th>
+            <th>Owner</th>
+            <th>Brand/Model</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for v in recent_vehicles %}
+          <tr>
+            <td><a href="{% url 'vehicle_detail' v.pk %}"><strong>{{ v.registration_number }}</strong></a></td>
+            <td>{{ v.owner_name }}</td>
+            <td>{{ v.brand }} {{ v.model_name }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="icon">🏍️</div>
+      <p>No vehicles registered yet.<br>
+        <a href="{% url 'vehicle_create' %}">Register the first one →</a>
+      </p>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Recent Challans -->
+  <div class="card">
+    <div class="card-header">
+      <h2>📋 Recent Challans</h2>
+      <a href="{% url 'challan_list' %}" class="btn btn-outline btn-sm">View all</a>
+    </div>
+    {% if recent_challans %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Challan No.</th>
+            <th>Vehicle</th>
+            <th>Fine</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in recent_challans %}
+          <tr>
+            <td><strong>{{ c.challan_number }}</strong></td>
+            <td>{{ c.vehicle.registration_number }}</td>
+            <td>₹{{ c.fine_amount }}</td>
+            <td>
+              {% if c.is_paid %}
+                <span class="badge badge-paid">Paid</span>
+              {% else %}
+                <span class="badge badge-pending">Pending</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="empty-state">
+      <div class="icon">📋</div>
+      <p>No challans issued yet.</p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+{% endblock %}

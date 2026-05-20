@@ -1,0 +1,33 @@
+{% extends "vehicles/base.html" %}
+
+{% block title %}Delete Challan — VahanChallan{% endblock %}
+{% block page_title %}Delete Challan{% endblock %}
+
+{% block content %}
+
+<div class="card confirm-card">
+  <div class="card-header">
+    <h2>⚠️ Confirm Deletion</h2>
+  </div>
+  <div class="card-body">
+
+    <p>You are about to permanently delete the following challan:</p>
+
+    <div class="danger-zone">
+      <strong>{{ challan.challan_number }}</strong><br>
+      Vehicle: {{ challan.vehicle.registration_number }} ({{ challan.vehicle.owner_name }})<br>
+      Violation: {{ challan.get_violation_type_display }}<br>
+      Fine: ₹{{ challan.fine_amount }}<br>
+      Status: {% if challan.is_paid %}Paid{% else %}Pending{% endif %}
+    </div>
+
+    <form method="POST" style="display:flex;gap:.75rem;">
+      {% csrf_token %}
+      <button type="submit" class="btn btn-danger">🗑️ Yes, Delete</button>
+      <a href="{% url 'challan_list' %}" class="btn btn-outline">Cancel</a>
+    </form>
+
+  </div>
+</div>
+
+{% endblock %}

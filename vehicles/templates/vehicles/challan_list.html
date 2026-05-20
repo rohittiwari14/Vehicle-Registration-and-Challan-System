@@ -1,0 +1,103 @@
+{% extends "vehicles/base.html" %}
+
+{% block title %}Challans — VahanChallan{% endblock %}
+{% block page_title %}All Challans{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'challan_create' %}" class="btn btn-primary btn-sm">➕ Issue New Challan</a>
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+  <div class="card-header" style="flex-wrap:wrap;gap:.75rem;">
+    <h2>All Challans ({{ challans.count }})</h2>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
+
+      <!-- Search -->
+      <form method="GET" class="search-bar">
+        <input type="hidden" name="status" value="{{ status_filter }}">
+        <input type="text" name="q" class="form-input" placeholder="Search challan, reg. no., location…" value="{{ search_query }}">
+        <button type="submit" class="btn btn-outline">🔍</button>
+        {% if search_query %}<a href="{% url 'challan_list' %}{% if status_filter %}?status={{ status_filter }}{% endif %}" class="btn btn-outline">✕</a>{% endif %}
+      </form>
+
+      <!-- Status filter -->
+      <div style="display:flex;gap:.4rem;">
+        <a href="?{% if search_query %}q={{ search_query }}&{% endif %}status=" class="btn btn-sm {% if not status_filter %}btn-primary{% else %}btn-outline{% endif %}">All</a>
+        <a href="?{% if search_query %}q={{ search_query }}&{% endif %}status=pending" class="btn btn-sm {% if status_filter == 'pending' %}btn-primary{% else %}btn-outline{% endif %}">Pending</a>
+        <a href="?{% if search_query %}q={{ search_query }}&{% endif %}status=paid" class="btn btn-sm {% if status_filter == 'paid' %}btn-primary{% else %}btn-outline{% endif %}">Paid</a>
+      </div>
+
+    </div>
+  </div>
+
+  {% if challans %}
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Challan No.</th>
+          <th>Vehicle Reg. No.</th>
+          <th>Owner</th>
+          <th>Violation</th>
+          <th>Date</th>
+          <th>Location</th>
+          <th>Fine (₹)</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in challans %}
+        <tr>
+          <td style="color:#6b7280;">{{ forloop.counter }}</td>
+          <td><strong>{{ c.challan_number }}</strong></td>
+          <td>
+            <a href="{% url 'vehicle_detail' c.vehicle.pk %}">
+              {{ c.vehicle.registration_number }}
+            </a>
+          </td>
+          <td>{{ c.vehicle.owner_name }}</td>
+          <td>{{ c.get_violation_type_display }}</td>
+          <td>{{ c.violation_date|date:"d M Y" }}</td>
+          <td>{{ c.violation_location }}</td>
+          <td><strong>₹{{ c.fine_amount }}</strong></td>
+          <td>
+            {% if c.is_paid %}
+              <span class="badge badge-paid">✓ Paid</span>
+            {% else %}
+              <span class="badge badge-pending">Pending</span>
+            {% endif %}
+          </td>
+          <td>
+            <div class="actions-col">
+              <a href="{% url 'challan_edit' c.pk %}" class="btn btn-outline btn-sm btn-icon" title="Edit">✏️</a>
+              {% if not c.is_paid %}
+                <a href="{% url 'mark_challan_paid' c.pk %}" class="btn btn-sm btn-icon" style="background:#dcfce7;color:#16a34a;" title="Mark as Paid">✅</a>
+              {% endif %}
+              <a href="{% url 'challan_delete' c.pk %}" class="btn btn-sm btn-icon" style="background:#fee2e2;color:#dc2626;" title="Delete">🗑️</a>
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <div class="icon">📋</div>
+    <p>
+      {% if search_query or status_filter %}
+        No challans match your filters.
+      {% else %}
+        No challans issued yet.
+      {% endif %}
+    </p>
+    <a href="{% url 'challan_create' %}" class="btn btn-primary" style="margin-top:1rem;">➕ Issue First Challan</a>
+  </div>
+  {% endif %}
+</div>
+
+{% endblock %}

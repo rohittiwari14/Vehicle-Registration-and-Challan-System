@@ -1,0 +1,100 @@
+{% extends "vehicles/base.html" %}
+
+{% block title %}{{ form_title }} — VahanChallan{% endblock %}
+{% block page_title %}{{ form_title }}{% endblock %}
+
+{% block content %}
+
+<div class="card" style="max-width:680px;">
+  <div class="card-header">
+    <h2>{{ form_title }}</h2>
+  </div>
+  <div class="card-body">
+
+    <div class="alert alert-info" style="margin-bottom:1.25rem;font-size:.85rem;">
+      ℹ️ Challans can only be issued for <strong>registered vehicles</strong>. If the vehicle is not in the dropdown, register it first.
+    </div>
+
+    <form method="POST" novalidate>
+      {% csrf_token %}
+
+      <div class="form-grid">
+
+        <div class="form-group full">
+          <label class="form-label" for="{{ form.vehicle.id_for_label }}">
+            Vehicle (Registration Number) <span style="color:#dc2626;">*</span>
+          </label>
+          {{ form.vehicle }}
+          {% if form.vehicle.errors %}
+            <span class="form-error">{{ form.vehicle.errors.0 }}</span>
+          {% endif %}
+          <span class="form-help">Only registered two-wheelers are listed here.</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.violation_type.id_for_label }}">
+            Violation Type <span style="color:#dc2626;">*</span>
+          </label>
+          {{ form.violation_type }}
+          {% if form.violation_type.errors %}
+            <span class="form-error">{{ form.violation_type.errors.0 }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.violation_date.id_for_label }}">
+            Violation Date <span style="color:#dc2626;">*</span>
+          </label>
+          {{ form.violation_date }}
+          {% if form.violation_date.errors %}
+            <span class="form-error">{{ form.violation_date.errors.0 }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group full">
+          <label class="form-label" for="{{ form.violation_location.id_for_label }}">
+            Violation Location <span style="color:#dc2626;">*</span>
+          </label>
+          {{ form.violation_location }}
+          {% if form.violation_location.errors %}
+            <span class="form-error">{{ form.violation_location.errors.0 }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.fine_amount.id_for_label }}">
+            Fine Amount (₹) <span style="color:#dc2626;">*</span>
+          </label>
+          {{ form.fine_amount }}
+          {% if form.fine_amount.errors %}
+            <span class="form-error">{{ form.fine_amount.errors.0 }}</span>
+          {% endif %}
+        </div>
+
+        <div class="form-group" style="justify-content:flex-end;padding-bottom:.5rem;">
+          <div class="checkbox-row" style="margin-top:1.5rem;">
+            {{ form.is_paid }}
+            <label for="{{ form.is_paid.id_for_label }}">Mark as already paid</label>
+          </div>
+        </div>
+
+        <div class="form-group full">
+          <label class="form-label" for="{{ form.remarks.id_for_label }}">Remarks</label>
+          {{ form.remarks }}
+          {% if form.remarks.errors %}
+            <span class="form-error">{{ form.remarks.errors.0 }}</span>
+          {% endif %}
+        </div>
+
+      </div>
+
+      <div style="display:flex;gap:.75rem;margin-top:1.5rem;padding-top:1rem;border-top:1px solid #e5e7eb;">
+        <button type="submit" class="btn btn-primary">💾 {{ submit_label }}</button>
+        <a href="{% url 'challan_list' %}" class="btn btn-outline">Cancel</a>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+{% endblock %}
