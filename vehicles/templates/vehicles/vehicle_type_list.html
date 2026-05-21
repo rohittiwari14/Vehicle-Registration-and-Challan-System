@@ -1,0 +1,60 @@
+{% extends "vehicles/base.html" %}
+
+{% block title %}Vehicle Types — VahanChallan{% endblock %}
+{% block page_title %}Vehicle Types{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'vehicle_type_create' %}" class="btn btn-primary btn-sm">➕ Add Vehicle Type</a>
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+  <div class="card-header">
+    <h3>Manage Vehicle Types</h3>
+    <p style="margin:.25rem 0 0;font-size:.875rem;color:#6b7280;">
+      These types populate the Vehicle Type dropdown when registering a vehicle.
+    </p>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Type Name</th>
+          <th>Status</th>
+          <th>Vehicles Using This</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for vt in vehicle_types %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td><strong>{{ vt.name }}</strong></td>
+          <td>
+            {% if vt.is_active %}
+              <span class="badge badge-success">Active</span>
+            {% else %}
+              <span class="badge badge-danger">Inactive</span>
+            {% endif %}
+          </td>
+          <td>{{ vt.vehicles.count }}</td>
+          <td>
+            <a href="{% url 'vehicle_type_edit' vt.pk %}" class="btn btn-outline btn-sm">✏️ Edit</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="5" style="text-align:center;color:#6b7280;padding:2rem;">
+            No vehicle types added yet.
+            <a href="{% url 'vehicle_type_create' %}">Add the first one →</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,139 @@
+{% extends "vehicles/base.html" %}
+
+{% block title %}My Challans — VahanChallan{% endblock %}
+{% block page_title %}My Challans{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'vehicle_list' %}" class="btn btn-outline btn-sm">🏍️ All Vehicles</a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Summary banner -->
+<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem;">
+  <div class="stat-card">
+    <div class="stat-value">{{ challans|length }}</div>
+    <div class="stat-label">Total Challans</div>
+  </div>
+  <div class="stat-card" style="border-left:4px solid #ef4444;">
+    <div class="stat-value" style="color:#ef4444;">₹{{ total_pending_fine }}</div>
+    <div class="stat-label">Total Pending Fine</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-value">{{ user_vehicles|length }}</div>
+    <div class="stat-label">Registered Vehicles</div>
+  </div>
+</div>
+
+{% if not user_vehicles %}
+  <div class="alert alert-info">
+    ℹ️ No vehicles are linked to your account yet. Please contact an administrator to link your vehicle(s) to your account.
+  </div>
+{% else %}
+
+  <!-- Filter bar -->
+  <div class="card" style="margin-bottom:1rem;">
+    <div class="card-body" style="padding:.75rem 1rem;display:flex;gap:.75rem;align-items:center;flex-wrap:wrap;">
+      <span style="font-size:.875rem;font-weight:500;color:#6b7280;">Filter:</span>
+      <a href="{% url 'my_challans' %}" class="btn btn-sm {% if not status_filter %}btn-primary{% else %}btn-outline{% endif %}">All</a>
+      <a href="?status=pending" class="btn btn-sm {% if status_filter == 'pending' %}btn-primary{% else %}btn-outline{% endif %}">⏳ Pending</a>
+      <a href="?status=paid" class="btn btn-sm {% if status_filter == 'paid' %}btn-primary{% else %}btn-outline{% endif %}">✅ Paid</a>
+    </div>
+  </div>
+
+  {% if challans %}
+  <div class="card">
+    <div class="card-header">
+      <h3>Challans for Your Vehicles</h3>
+    </div>
+    <div style="overflow-x:auto;">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Challan No.</th>
+            <th>Vehicle</th>
+            <th>Violation</th>
+            <th>Date</th>
+            <th>Location</th>
+            <th>Fine (₹)</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for challan in challans %}
+          <tr>
+            <td><strong>{{ challan.challan_number }}</strong></td>
+            <td>
+              {{ challan.vehicle.registration_number }}<br>
+              <small style="color:#6b7280;">{{ challan.vehicle.brand }} {{ challan.vehicle.model_name }}</small>
+            </td>
+            <td>{{ challan.violation_type.name }}</td>
+            <td>{{ challan.violation_date }}</td>
+            <td>{{ challan.violation_location }}</td>
+            <td><strong>₹{{ challan.fine_amount }}</strong></td>
+            <td>
+              {% if challan.is_paid %}
+                <span class="badge badge-success">✅ Paid</span>
+                {% if challan.paid_at %}
+                  <br><small style="color:#6b7280;">{{ challan.paid_at|date:"d M Y" }}</small>
+                {% endif %}
+              {% else %}
+                <span class="badge badge-danger">⏳ Pending</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% else %}
+    <div class="alert alert-info">ℹ️ No challans found for the selected filter.</div>
+  {% endif %}
+
+  <!-- Linked vehicles summary -->
+  <div class="card" style="margin-top:1.5rem;">
+    <div class="card-header"><h3>Your Registered Vehicles</h3></div>
+    <div style="overflow-x:auto;">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Registration No.</th>
+            <th>Type</th>
+            <th>Brand / Model</th>
+            <th>Year</th>
+            <th>Pending Challans</th>
+            <th>Pending Fine</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for vehicle in user_vehicles %}
+          <tr>
+            <td><strong>{{ vehicle.registration_number }}</strong></td>
+            <td>{{ vehicle.vehicle_type.name }}</td>
+            <td>{{ vehicle.brand }} {{ vehicle.model_name }}</td>
+            <td>{{ vehicle.year_of_manufacture }}</td>
+            <td>
+              {% if vehicle.pending_challans_count > 0 %}
+                <span class="badge badge-danger">{{ vehicle.pending_challans_count }}</span>
+              {% else %}
+                <span class="badge badge-success">0</span>
+              {% endif %}
+            </td>
+            <td>
+              {% if vehicle.total_challan_amount > 0 %}
+                <strong style="color:#ef4444;">₹{{ vehicle.total_challan_amount }}</strong>
+              {% else %}
+                <span style="color:#22c55e;">₹0</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+{% endif %}
+
+{% endblock %}

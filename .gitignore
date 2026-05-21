@@ -1,2 +1,5 @@
 vc_venv
+
 __pycache__/
+
+vehicles/migrations/
