@@ -1,0 +1,38 @@
+{% extends "vehicles/base.html" %}
+
+{% block title %}{{ form_title }} — VahanChallan{% endblock %}
+{% block page_title %}{{ form_title }}{% endblock %}
+
+{% block content %}
+
+<div class="card" style="max-width:480px;">
+  <div class="card-header"><h2>{{ form_title }}</h2></div>
+  <div class="card-body">
+    <form method="POST" novalidate>
+      {% csrf_token %}
+
+      <div class="form-group" style="margin-bottom:1rem;">
+        <label class="form-label" for="{{ form.name.id_for_label }}">
+          Type Name <span style="color:#dc2626;">*</span>
+        </label>
+        {{ form.name }}
+        {% if form.name.errors %}<span class="form-error">{{ form.name.errors.0 }}</span>{% endif %}
+        <span class="form-help">e.g. Scooter, Moped, Bike, Electric Scooter</span>
+      </div>
+
+      <div class="form-group" style="margin-bottom:1.5rem;">
+        <div class="checkbox-row">
+          {{ form.is_active }}
+          <label for="{{ form.is_active.id_for_label }}">Active (shows in registration dropdown)</label>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:.75rem;">
+        <button type="submit" class="btn btn-primary">💾 {{ submit_label }}</button>
+        <a href="{% url 'vehicle_type_list' %}" class="btn btn-outline">Cancel</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% endblock %}

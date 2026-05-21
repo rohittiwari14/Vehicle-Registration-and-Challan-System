@@ -1,0 +1,64 @@
+{% extends "vehicles/base.html" %}
+
+{% block title %}Violation Types — VahanChallan{% endblock %}
+{% block page_title %}Violation Types{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'violation_type_create' %}" class="btn btn-primary btn-sm">➕ Add Violation Type</a>
+{% endblock %}
+
+{% block content %}
+
+<div class="card">
+  <div class="card-header">
+    <h3>Manage Violation Types</h3>
+    <p style="margin:.25rem 0 0;font-size:.875rem;color:#6b7280;">
+      These violations populate the Violation Type dropdown when issuing a challan.
+    </p>
+  </div>
+  <div style="overflow-x:auto;">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Violation Name</th>
+          <th>Default Fine (₹)</th>
+          <th>Status</th>
+          <th>Challans Raised</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for viol in violation_types %}
+        <tr>
+          <td>{{ forloop.counter }}</td>
+          <td><strong>{{ viol.name }}</strong></td>
+          <td>
+            {% if viol.default_fine %}₹{{ viol.default_fine }}{% else %}<span style="color:#9ca3af;">—</span>{% endif %}
+          </td>
+          <td>
+            {% if viol.is_active %}
+              <span class="badge badge-success">Active</span>
+            {% else %}
+              <span class="badge badge-danger">Inactive</span>
+            {% endif %}
+          </td>
+          <td>{{ viol.challans.count }}</td>
+          <td>
+            <a href="{% url 'violation_type_edit' viol.pk %}" class="btn btn-outline btn-sm">✏️ Edit</a>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" style="text-align:center;color:#6b7280;padding:2rem;">
+            No violation types added yet.
+            <a href="{% url 'violation_type_create' %}">Add the first one →</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% endblock %}

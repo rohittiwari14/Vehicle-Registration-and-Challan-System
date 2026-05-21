@@ -27,19 +27,30 @@
       </a>
 
       <div class="nav-section">Vehicles</div>
-      <a href="{% url 'vehicle_list' %}" class="nav-link {% if 'vehicle' in request.resolver_match.url_name %}active{% endif %}">
+      <a href="{% url 'vehicle_list' %}" class="nav-link {% if request.resolver_match.url_name == 'vehicle_list' or request.resolver_match.url_name == 'vehicle_detail' %}active{% endif %}">
         <span class="icon">🏍️</span> All Vehicles
       </a>
-      <a href="{% url 'vehicle_create' %}" class="nav-link">
+      <a href="{% url 'vehicle_create' %}" class="nav-link {% if request.resolver_match.url_name == 'vehicle_create' %}active{% endif %}">
         <span class="icon">➕</span> Register Vehicle
       </a>
 
       <div class="nav-section">Challans</div>
-      <a href="{% url 'challan_list' %}" class="nav-link {% if 'challan' in request.resolver_match.url_name %}active{% endif %}">
+      <a href="{% url 'challan_list' %}" class="nav-link {% if request.resolver_match.url_name == 'challan_list' %}active{% endif %}">
         <span class="icon">📋</span> All Challans
       </a>
-      <a href="{% url 'challan_create' %}" class="nav-link">
+      <a href="{% url 'challan_create' %}" class="nav-link {% if request.resolver_match.url_name == 'challan_create' %}active{% endif %}">
         <span class="icon">➕</span> Issue Challan
+      </a>
+      <a href="{% url 'my_challans' %}" class="nav-link {% if request.resolver_match.url_name == 'my_challans' %}active{% endif %}">
+        <span class="icon">👤</span> My Challans
+      </a>
+
+      <div class="nav-section">Settings</div>
+      <a href="{% url 'vehicle_type_list' %}" class="nav-link {% if 'vehicle_type' in request.resolver_match.url_name %}active{% endif %}">
+        <span class="icon">🔧</span> Vehicle Types
+      </a>
+      <a href="{% url 'violation_type_list' %}" class="nav-link {% if 'violation_type' in request.resolver_match.url_name %}active{% endif %}">
+        <span class="icon">⚠️</span> Violation Types
       </a>
     </nav>
 

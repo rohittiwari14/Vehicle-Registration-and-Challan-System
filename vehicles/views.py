@@ -4,12 +4,16 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
 from django.db.models import Q, Count, Sum
-from .models import Vehicle, Challan
-from .forms import LoginForm, VehicleForm, ChallanForm
+from .models import Vehicle, Challan, VehicleType, ViolationType
+from .forms import (
+    LoginForm, VehicleForm, ChallanForm,
+    VehicleTypeForm, ViolationTypeForm,
+)
 
 
 
 def login_view(request):
+
     if request.user.is_authenticated:
         return redirect('dashboard')
 
@@ -20,7 +24,6 @@ def login_view(request):
             user = form.get_user()
             login(request, user)
             messages.success(request, f'Welcome back, {user.get_full_name() or user.username}!')
-            # Respect the ?next= parameter if present
             next_url = request.GET.get('next', 'dashboard')
             return redirect(next_url)
         else:
@@ -30,6 +33,7 @@ def login_view(request):
 
 
 def logout_view(request):
+    
     logout(request)
     messages.info(request, 'You have been logged out successfully.')
     return redirect('login')
@@ -38,6 +42,7 @@ def logout_view(request):
 
 @login_required
 def dashboard(request):
+
     total_vehicles = Vehicle.objects.count()
     total_challans = Challan.objects.count()
     pending_challans = Challan.objects.filter(is_paid=False).count()
@@ -59,10 +64,12 @@ def dashboard(request):
     return render(request, 'vehicles/dashboard.html', context)
 
 
+
 @login_required
 def vehicle_list(request):
+
     search_query = request.GET.get('q', '').strip()
-    vehicles = Vehicle.objects.select_related('registered_by').annotate(
+    vehicles = Vehicle.objects.select_related('registered_by', 'vehicle_type').annotate(
         challan_count=Count('challans')
     )
 
@@ -84,7 +91,7 @@ def vehicle_list(request):
 @login_required
 def vehicle_detail(request, pk):
     vehicle = get_object_or_404(Vehicle, pk=pk)
-    challans = vehicle.challans.select_related('issued_by').all()
+    challans = vehicle.challans.select_related('issued_by', 'violation_type').all()
     context = {
         'vehicle': vehicle,
         'challans': challans,
@@ -94,11 +101,16 @@ def vehicle_detail(request, pk):
 
 @login_required
 def vehicle_create(request):
+
     if request.method == 'POST':
         form = VehicleForm(request.POST)
         if form.is_valid():
             vehicle = form.save(commit=False)
             vehicle.registered_by = request.user
+            # Auto-link to registering user if not manually set,
+            # so My Challans works without any extra admin step.
+            if not vehicle.linked_user:
+                vehicle.linked_user = request.user
             vehicle.save()
             messages.success(
                 request,
@@ -119,6 +131,7 @@ def vehicle_create(request):
 
 @login_required
 def vehicle_edit(request, pk):
+
     vehicle = get_object_or_404(Vehicle, pk=pk)
 
     if request.method == 'POST':
@@ -142,6 +155,7 @@ def vehicle_edit(request, pk):
 
 @login_required
 def vehicle_delete(request, pk):
+    
     vehicle = get_object_or_404(Vehicle, pk=pk)
 
     if request.method == 'POST':
@@ -154,12 +168,14 @@ def vehicle_delete(request, pk):
 
 
 
+
 @login_required
 def challan_list(request):
+
     search_query = request.GET.get('q', '').strip()
     status_filter = request.GET.get('status', '')
 
-    challans = Challan.objects.select_related('vehicle', 'issued_by').all()
+    challans = Challan.objects.select_related('vehicle', 'issued_by', 'violation_type').all()
 
     if search_query:
         challans = challans.filter(
@@ -184,6 +200,7 @@ def challan_list(request):
 
 @login_required
 def challan_create(request):
+
     initial = {}
     vehicle_pk = request.GET.get('vehicle')
     if vehicle_pk:
@@ -216,6 +233,7 @@ def challan_create(request):
 
 @login_required
 def challan_edit(request, pk):
+
     challan = get_object_or_404(Challan, pk=pk)
     was_paid_before = challan.is_paid
 
@@ -245,6 +263,7 @@ def challan_edit(request, pk):
 
 @login_required
 def challan_delete(request, pk):
+
     challan = get_object_or_404(Challan, pk=pk)
 
     if request.method == 'POST':
@@ -258,6 +277,7 @@ def challan_delete(request, pk):
 
 @login_required
 def mark_challan_paid(request, pk):
+    
     challan = get_object_or_404(Challan, pk=pk)
     if not challan.is_paid:
         challan.is_paid = True
@@ -267,3 +287,136 @@ def mark_challan_paid(request, pk):
     else:
         messages.info(request, f'Challan {challan.challan_number} is already paid.')
     return redirect(request.META.get('HTTP_REFERER', 'challan_list'))
+
+
+
+
+@login_required
+def my_challans(request):
+
+    user_vehicles = Vehicle.objects.filter(linked_user=request.user)
+
+    challans = Challan.objects.filter(
+        vehicle__in=user_vehicles
+    ).select_related('vehicle', 'violation_type').order_by('-violation_date')
+
+    status_filter = request.GET.get('status', '')
+    if status_filter == 'paid':
+        challans = challans.filter(is_paid=True)
+    elif status_filter == 'pending':
+        challans = challans.filter(is_paid=False)
+
+    total_pending_fine = challans.filter(is_paid=False).aggregate(
+        total=Sum('fine_amount')
+    )['total'] or 0
+
+    context = {
+        'challans': challans,
+        'user_vehicles': user_vehicles,
+        'status_filter': status_filter,
+        'total_pending_fine': total_pending_fine,
+    }
+    return render(request, 'vehicles/my_challans.html', context)
+
+
+@login_required
+def vehicle_type_list(request):
+    
+    vehicle_types = VehicleType.objects.all()
+    return render(request, 'vehicles/vehicle_type_list.html', {'vehicle_types': vehicle_types})
+
+
+@login_required
+def vehicle_type_create(request):
+    
+    if request.method == 'POST':
+        form = VehicleTypeForm(request.POST)
+        if form.is_valid():
+            vt = form.save()
+            messages.success(request, f'Vehicle type "{vt.name}" added successfully.')
+            return redirect('vehicle_type_list')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = VehicleTypeForm()
+
+    return render(request, 'vehicles/vehicle_type_form.html', {
+        'form': form,
+        'form_title': 'Add Vehicle Type',
+        'submit_label': 'Add Type',
+    })
+
+
+@login_required
+def vehicle_type_edit(request, pk):
+    
+    vt = get_object_or_404(VehicleType, pk=pk)
+
+    if request.method == 'POST':
+        form = VehicleTypeForm(request.POST, instance=vt)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Vehicle type "{vt.name}" updated.')
+            return redirect('vehicle_type_list')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = VehicleTypeForm(instance=vt)
+
+    return render(request, 'vehicles/vehicle_type_form.html', {
+        'form': form,
+        'form_title': f'Edit Vehicle Type — {vt.name}',
+        'submit_label': 'Save Changes',
+    })
+
+
+
+@login_required
+def violation_type_list(request):
+    
+    violation_types = ViolationType.objects.all()
+    return render(request, 'vehicles/violation_type_list.html', {'violation_types': violation_types})
+
+
+@login_required
+def violation_type_create(request):
+    
+    if request.method == 'POST':
+        form = ViolationTypeForm(request.POST)
+        if form.is_valid():
+            viol = form.save()
+            messages.success(request, f'Violation type "{viol.name}" added successfully.')
+            return redirect('violation_type_list')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = ViolationTypeForm()
+
+    return render(request, 'vehicles/violation_type_form.html', {
+        'form': form,
+        'form_title': 'Add Violation Type',
+        'submit_label': 'Add Violation',
+    })
+
+
+@login_required
+def violation_type_edit(request, pk):
+    
+    viol = get_object_or_404(ViolationType, pk=pk)
+
+    if request.method == 'POST':
+        form = ViolationTypeForm(request.POST, instance=viol)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f'Violation type "{viol.name}" updated.')
+            return redirect('violation_type_list')
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = ViolationTypeForm(instance=viol)
+
+    return render(request, 'vehicles/violation_type_form.html', {
+        'form': form,
+        'form_title': f'Edit Violation Type — {viol.name}',
+        'submit_label': 'Save Changes',
+    })

@@ -5,7 +5,7 @@
 
 {% block content %}
 
-<div class="card" style="max-width:780px;">
+<div class="card" style="max-width:820px;">
   <div class="card-header">
     <h2>{{ form_title }}</h2>
   </div>
@@ -45,6 +45,10 @@
           {% if form.vehicle_type.errors %}
             <span class="form-error">{{ form.vehicle_type.errors.0 }}</span>
           {% endif %}
+          <span class="form-help">
+            Types are managed under
+            <a href="{% url 'vehicle_type_list' %}" target="_blank">Settings → Vehicle Types</a>
+          </span>
         </div>
 
         <div class="form-group">
@@ -95,16 +99,29 @@
           {% if form.engine_number.errors %}
             <span class="form-error">{{ form.engine_number.errors.0 }}</span>
           {% endif %}
+          <span class="form-help">6–17 uppercase letters and digits (from RC book)</span>
         </div>
 
-        <div class="form-group full">
+        <div class="form-group">
           <label class="form-label" for="{{ form.chassis_number.id_for_label }}">
-            Chassis Number <span style="color:#dc2626;">*</span>
+            Chassis / VIN Number <span style="color:#dc2626;">*</span>
           </label>
           {{ form.chassis_number }}
           {% if form.chassis_number.errors %}
             <span class="form-error">{{ form.chassis_number.errors.0 }}</span>
           {% endif %}
+          <span class="form-help">Exactly 17 characters. Letters I, O, Q are not allowed (standard VIN).</span>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label" for="{{ form.linked_user.id_for_label }}">
+            Link to User Account
+          </label>
+          {{ form.linked_user }}
+          {% if form.linked_user.errors %}
+            <span class="form-error">{{ form.linked_user.errors.0 }}</span>
+          {% endif %}
+          <span class="form-help">Link this vehicle to a user so they can see their challans under "My Challans".</span>
         </div>
 
       </div>
